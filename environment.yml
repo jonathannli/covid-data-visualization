@@ -1,0 +1,11 @@
+name: environment
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - pandas
+  - matplotlib.pyplot
+  - seaborn
+  - plotly.graph_objects
+  - geographiclib
+  - ipywidgets.widgets

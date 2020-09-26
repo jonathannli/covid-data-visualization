@@ -10,12 +10,15 @@ from plotly.subplots import make_subplots
 import plotly.colors as cl
 from datetime import datetime as dt
 import dash_bootstrap_components as dbc
+import dash_table.FormatTemplate as FormatTemplate
+
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
+server = app.server
 ## Data upload and pre-processing
 
 # covid = pd.read_csv("InternationalCOVID19Cases.csv")
@@ -49,16 +52,13 @@ min_date = covid["date"].min()
 max_date = covid["date"].max()
 
 
-currentdata_df = covid[covid["date"] == max_date].sort_values("cases", ascending=False)[["name_en","cases", "deaths", "cases_100k"]]
-currentdata_df.columns = ["Country", "Total Confirmed Cases", "Total Confirmed Deaths", "Cases per 100k"]
-currentdata_df["Death %"] = np.round(currentdata_df["Total Confirmed Deaths"]/currentdata_df["Total Confirmed Cases"] * 100, 2)
+table_df = covid[covid["date"] == max_date].sort_values("cases", ascending=False)[["name_en","cases", "deaths", "cases_100k"]]
+table_df.columns = ["Country", "Total Confirmed Cases", "Total Confirmed Deaths", "Cases per 100k"]
+table_df["Death %"] = table_df["Total Confirmed Deaths"]/table_df["Total Confirmed Cases"]
 
-worldwide_cases = currentdata_df["Total Confirmed Cases"].sum()
-worldwide_deaths = currentdata_df["Total Confirmed Deaths"].sum()
+worldwide_cases = table_df["Total Confirmed Cases"].sum()
+worldwide_deaths = table_df["Total Confirmed Deaths"].sum()
 
-table_df = currentdata_df
-table_df["Total Confirmed Cases"] = table_df["Total Confirmed Cases"].apply(lambda x: f"{x:,d}")
-table_df["Total Confirmed Deaths"] = table_df["Total Confirmed Deaths"].apply(lambda x: f"{x:,d}")
 
 
 app.layout = html.Div(children=[
@@ -102,7 +102,29 @@ app.layout = html.Div(children=[
         id = 'cases-graph')),
     html.Div(dash_table.DataTable(
         id = 'total-cases-table',
-        columns = [{'name':i, 'id': i} for i in currentdata_df.columns],
+        columns = [
+            {
+            'name': 'Country',
+            'id': 'Country',
+            'type': 'text'
+        },  {
+            'name': 'Total Confirmed Cases',
+            'id': 'Total Confirmed Cases',
+            'type': 'numeric'
+        },  {
+            'name': 'Total Confirmed Deaths',
+            'id': 'Total Confirmed Deaths',
+            'type': 'numeric'
+        },  {
+            'name': 'Cases per 100k',
+            'id': 'Cases per 100k',
+            'type': 'numeric'
+        },  {
+            'name': 'Death %',
+            'id': 'Death %',
+            'type': 'numeric',
+            'format': FormatTemplate.percentage(2)
+        }],
         data = table_df.to_dict('records'),
         sort_action = "native",
         fixed_rows={'headers': True},
@@ -185,8 +207,8 @@ def plot_all(country, start_date, end_date, daily):
                         row = 1, col = 2)
 
     ## Death Percentage by Country
-    ordered_df = currentdata_df.sort_values("Death %", ascending = False)
-    death_series = ordered_df["Death %"][:num_countries].reset_index(drop=True)
+    ordered_df = table_df.sort_values("Death %", ascending = False)
+    death_series = ordered_df["Death %"][:num_countries].reset_index(drop=True) * 100
     dcount_series = ordered_df["Country"][:num_countries]
 
     fig.add_trace(go.Bar(x = dcount_series, y = death_series,
@@ -229,7 +251,7 @@ def plot_all(country, start_date, end_date, daily):
         fig.update_yaxes(title_text = "Death Rate (%)", row = 2, col = 2)
 
         col_counter += 1
-    fig.update_layout(autosize=False, height=900)
+    fig.update_layout(height=900)
     fig.update_layout(legend=dict(
             yanchor="top",
             y=0.99,
