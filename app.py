@@ -19,6 +19,7 @@ external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 server = app.server
+
 ## Data upload and pre-processing
 
 # covid = pd.read_csv("InternationalCOVID19Cases.csv")
@@ -132,7 +133,6 @@ app.layout = html.Div(children=[
                      'height':550#,
                      # 'width':850
                      },
-        # style_as_list_view=True,
         style_data_conditional=[
             {
                 'if': {'row_index': 'odd'},
@@ -149,16 +149,11 @@ app.layout = html.Div(children=[
         },
         css=[{'selector': '.row', 'rule': 'margin: 0'}]),
         style={
-               # 'width': '49%','display':'inline-block',
                'margin-right': 'auto',
                'margin-left': 'auto',
                'padding': '20px 0px 0px 0px',
                'padding-left':'5%', 'padding-right':'5%'})
 
-    # html.H4(children='COVID-19 Data', style={'width': '49%', 'display': 'inline-block'})
-    # html.Div(children='''
-    #     Please select the countries of interest and start and end dates of desired data:
-    # ''', style={'width': '49%', 'display': 'inline-block'})
 ])
 
 
@@ -180,8 +175,6 @@ def plot_all(country, start_date, end_date, daily):
                                           "Total Number of COVID-19 Cases",
                                           "Top 20 Countries with Highest Death Rate of COVID-19 Patients"),
                         vertical_spacing=0.1,
-                        # specs = [[{"type": "pie", "rowspan": 2}, {"type": "scatter"}],
-                        #          [None, {"type": "scatter"}]]
                         specs = [[{"type": "scatter"}, {"type": "pie"}],
                                  [{"type": "scatter"}, {"type": "bar"}]]
 
@@ -222,10 +215,13 @@ def plot_all(country, start_date, end_date, daily):
         if col_counter == col_len:
             col_counter = 0
         plotdf = covid.copy()
+
         ## Filter by country
         plotdf = plotdf[plotdf["name_en"] == c]
+
         ## Filter by date
         plotdf = plotdf[(plotdf["date"] >= start_date) & (plotdf["date"] <= end_date)]
+
         ## Total Cases
         fig.add_trace(go.Scatter(x = plotdf["date"], y = plotdf["cases"],
                                 name = c, legendgroup = c, showlegend = False,
@@ -238,14 +234,12 @@ def plot_all(country, start_date, end_date, daily):
                         row = 1, col = 1)
 
         ## Updating x-axis labels
-        # fig.update_xaxes(title_text = "Total Number of Cases", row = 1, col = 1)
         fig.update_xaxes(title_text = "Date", row = 1, col = 1)
         fig.update_xaxes(title_text = "Date", row = 2, col = 1)
         fig.update_xaxes(title_text = "Country", row = 2, col = 2)
 
 
         ## Updating y-axis labels
-        # fig.update_yaxes(title_text = "Country", row = 1, col = 1)
         fig.update_yaxes(title_text = "Number of New Confirmed Cases (Daily)", row = 1, col = 1)
         fig.update_yaxes(title_text = "Total Number of Confirmed Cases", row = 2, col = 1)
         fig.update_yaxes(title_text = "Death Rate (%)", row = 2, col = 2)
@@ -260,46 +254,5 @@ def plot_all(country, start_date, end_date, daily):
 
     return fig
 
-
-# def plot_movingavg(country, start_date, end_date):
-
-
-
 if __name__ == '__main__':
     app.run_server(debug=True)
-
-# Stuff saved for date conversion
-#
-# import datetime
-#
-# def list_to_date(lst):
-#     int_lst = [int(val) for val in lst]
-#     return datetime.date(int_lst[0], int_lst[1], int_lst[2])
-#
-# def get_days(val):
-#     return val.days
-#
-# def str_to_int(lst):
-#     return [int(val) for val in lst]
-#
-# def get_seconds(series):
-#     ad = series['assign_date']
-#     cd = series['complete_date']
-#     at = series['assign_time']
-#     ct = series['complete_time']
-#     return (datetime.datetime(cd[0],cd[1],cd[2],ct[0],ct[1],ct[2]) -
-#             datetime.datetime(ad[0],ad[1],ad[2],at[0],at[1],at[2])).total_seconds()
-#
-#
-# temp_df = pd.DataFrame(tasks['assigned_time'].str.split(" ").tolist(), columns = ['assign_date','assign_time'])
-# temp_df[['complete_date','complete_time']] = pd.DataFrame(tasks['completion_time'].str.split(" ").tolist(),
-#                                                           index=temp_df.index)
-#
-# temp_df['assign_date'] = temp_df['assign_date'].str.split("-").apply(str_to_int)
-# temp_df['complete_date'] = temp_df['complete_date'].str.split("-").apply(str_to_int)
-# temp_df['assign_time'] = temp_df['assign_time'].str.split(":").apply(str_to_int)
-# temp_df['complete_time'] = temp_df['complete_time'].str.split(":").apply(str_to_int)
-#
-# temp_df['second_complete'] = temp_df.apply(lambda x: get_seconds(x), axis=1)
-#
-#
