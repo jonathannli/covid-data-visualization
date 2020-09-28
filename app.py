@@ -63,7 +63,7 @@ worldwide_deaths = table_df["Total Confirmed Deaths"].sum()
 
 
 app.layout = html.Div(children=[
-    html.H1(children='COVID-19 Data', style={'padding': '0px 0px 5px 10px'}),
+    html.H1(children='Daily COVID-19 Data Updates', style={'padding': '0px 0px 5px 10px'}),
 
     html.Div(children='''
         Please select the countries of interest and start and end dates of desired data:
@@ -129,10 +129,6 @@ app.layout = html.Div(children=[
         data = table_df.to_dict('records'),
         sort_action = "native",
         fixed_rows={'headers': True},
-        style_table = {'overflowY': 'scroll',
-                     'height':550#,
-                     # 'width':850
-                     },
         style_data_conditional=[
             {
                 'if': {'row_index': 'odd'},
